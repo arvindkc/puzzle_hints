@@ -12,12 +12,12 @@ This app is to provide hints for NYT spelling bee.
 ### To deploy it on your own
 
 1. Download the repo
-2. Create a .env file, get an API key from dictionaryapi.com and set is DICTIONARY_API_KEY environment variable
+2. Create a .streamlit/secrets.toml file, and set DICTIONARY_API_KEY as the API key from dictionaryapi.com.
 
 ### Packages you will need
 
 ```
-pip install streamlit requests
+pip install -r requirements.txt
 ```
 
 ### To run the app

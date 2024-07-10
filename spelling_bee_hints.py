@@ -1,10 +1,12 @@
 import streamlit as st
 import requests
 import random
-import os
-from dotenv import load_dotenv
 
-api_key = os.getenv("DICTIONARY_API_KEY")
+# import os
+# from dotenv import load_dotenv
+
+# api_key = os.getenv("DICTIONARY_API_KEY")
+api_key = st.secrets["DICTIONARY_API_KEY"]
 base_url = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/"
 
 
@@ -89,7 +91,6 @@ def give_hint(word_list):
     hint = ["_" if i >= revealed else char for i, char in enumerate(word)]
 
     # Get the meaning of the word
-    api_key = os.getenv("DICTIONARY_API_KEY")
     word_meaning = get_word_meaning(word, api_key)
     return f"{''.join(hint)}", length, word_meaning[1]
 
