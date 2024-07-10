@@ -5,6 +5,9 @@ import random
 import os
 from dotenv import load_dotenv
 
+api_key = os.getenv("DICTIONARY_API_KEY")
+base_url = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/"
+
 
 def load_words_alpha():
     with open("words_alpha.txt") as word_file:
@@ -14,16 +17,12 @@ def load_words_alpha():
 
 def is_valid_word(word):
     """Checks if a word exists using a dictionary API (e.g., Merriam-Webster)."""
-    print(f"Checking word: {word}")
-    # Replace with your API key and endpoint
-    api_key = os.getenv("DICTIONARY_API_KEY")
-    url = f"https://www.dictionaryapi.com/api/v3/references/collegiate/json/{word}?key={api_key}"
+    url = f"{base_url}{word}?key={api_key}"
 
     try:
         response = requests.get(url)
         response.raise_for_status()  # Check for errors
         data = response.json()
-        print(data)
         return isinstance(
             data[0], dict
         )  # Check if it's a valid word definition (and not a list of suggestions)
@@ -42,9 +41,7 @@ def get_word_meaning(word, api_key):
     Returns:
         tuple: (word, meaning) if found, else (None, None).
     """
-    base_url = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/"
     url = f"{base_url}{word}?key={api_key}"
-
     try:
         response = requests.get(url)
         response.raise_for_status()  # Check for HTTP errors
@@ -88,16 +85,14 @@ def give_hint(word_list):
         word = random.choice(word_list)
         if is_valid_word(word):
             break
-
     length = len(word)
-    revealed = random.randint(1, length // 2)
+    revealed = random.randint(1, length - 1)
     hint = ["_" if i >= revealed else char for i, char in enumerate(word)]
 
     # Get the meaning of the word
     api_key = os.getenv("DICTIONARY_API_KEY")
     word_meaning = get_word_meaning(word, api_key)
     return f"{''.join(hint)}", length, word_meaning[1]
-
 
 
 # Streamlit UI
