@@ -14,6 +14,7 @@ def load_words_alpha():
 
 def is_valid_word(word):
     """Checks if a word exists using a dictionary API (e.g., Merriam-Webster)."""
+    print(f"Checking word: {word}")
     # Replace with your API key and endpoint
     api_key = os.getenv("DICTIONARY_API_KEY")
     url = f"https://www.dictionaryapi.com/api/v3/references/collegiate/json/{word}?key={api_key}"
@@ -22,12 +23,48 @@ def is_valid_word(word):
         response = requests.get(url)
         response.raise_for_status()  # Check for errors
         data = response.json()
+        print(data)
         return isinstance(
             data[0], dict
         )  # Check if it's a valid word definition (and not a list of suggestions)
     except requests.RequestException:
         return False
 
+def get_word_meaning(word, api_key):
+    """
+    Fetches the definition of the first word in the JSON response from DictionaryAPI.
+
+    Args:
+        word (str): The word to look up.
+        api_key (str): Your DictionaryAPI key.
+
+    Returns:
+        tuple: (word, meaning) if found, else (None, None).
+    """
+    base_url = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/"
+    url = f"{base_url}{word}?key={api_key}"
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Check for HTTP errors
+
+        data = response.json()
+
+        # Safety check: Ensure it's a valid dictionary entry
+        if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
+            for entry in data:
+                if entry.get(
+                    "fl"
+                ):  # Check if it's a valid word entry with a "fl" (functional label) field
+                    return (
+                        word,
+                        entry.get("shortdef")[0],
+                    )  # Get the first short definition
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data: {e}")
+
+    return (None, None)  # Word not found or error occurred
 
 def get_word_list(letters, center_letter):
     if not letters or not center_letter:
@@ -53,6 +90,12 @@ def give_hint(word_list):
     length = len(word)
     revealed = random.randint(1, length - 1)
     hint = ["_" if i >= revealed else char for i, char in enumerate(word)]
+
+    # Get the meaning of the word
+    api_key = os.getenv("DICTIONARY_API_KEY")
+    word_meaning = get_word_meaning(word, api_key)
+    if word_meaning[1]:
+        hint.append(f" ({word_meaning[1]})")
 
     return f"{''.join(hint)} (Length: {length})"
 
