@@ -30,6 +30,7 @@ def is_valid_word(word):
     except requests.RequestException:
         return False
 
+
 def get_word_meaning(word, api_key):
     """
     Fetches the definition of the first word in the JSON response from DictionaryAPI.
@@ -66,6 +67,7 @@ def get_word_meaning(word, api_key):
 
     return (None, None)  # Word not found or error occurred
 
+
 def get_word_list(letters, center_letter):
     if not letters or not center_letter:
         return []
@@ -88,16 +90,14 @@ def give_hint(word_list):
             break
 
     length = len(word)
-    revealed = random.randint(1, length - 1)
+    revealed = random.randint(1, length // 2)
     hint = ["_" if i >= revealed else char for i, char in enumerate(word)]
 
     # Get the meaning of the word
     api_key = os.getenv("DICTIONARY_API_KEY")
     word_meaning = get_word_meaning(word, api_key)
-    if word_meaning[1]:
-        hint.append(f" ({word_meaning[1]})")
+    return f"{''.join(hint)}", length, word_meaning[1]
 
-    return f"{''.join(hint)} (Length: {length})"
 
 
 # Streamlit UI
@@ -122,8 +122,10 @@ if center_letter and outer_letters and len(outer_letters) == 6:
     st.write(f"Outer letters: {', '.join(outer_letters)}")
 
     if st.button("Get Hint"):
-        hint = give_hint(st.session_state.word_list)
+        hint, length, word_meaning = give_hint(st.session_state.word_list)
         st.write(f"Hint: {hint}")
+        st.write(f"Length: {length}")
+        st.write(f"Meaning: {word_meaning}")
 else:
     st.write("Please enter a center letter and exactly 6 outer letters.")
 
